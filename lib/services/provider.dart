@@ -25,12 +25,8 @@ class AppProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setUser(data, username) {
-    if (username != null) {
-      user = User(id: data.id, email: data.email, username: username);
-    } else {
-      user = data;
-    }
+  void setUser(User userData) {
+    user = userData;
     notifyListeners();
   }
 

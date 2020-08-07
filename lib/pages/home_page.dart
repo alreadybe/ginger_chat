@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:read_head_chat/models/chat.dart';
 import 'package:read_head_chat/services/auth.dart';
 import 'package:read_head_chat/services/prefs.dart';
 import 'package:read_head_chat/services/provider.dart';
 import 'package:read_head_chat/services/storage.dart';
 import 'package:read_head_chat/widgets/category_selector.dart';
-import 'package:read_head_chat/widgets/chat_item.dart';
+import 'package:read_head_chat/widgets/chat_list.dart';
+import 'package:read_head_chat/widgets/user_list.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -16,15 +16,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   Auth _auth = Auth();
   Prefs _prefs = Prefs();
+
   Storage _storage = Storage();
 
-  String userId;
   Stream chatsStream;
 
   @override
   void initState() {
-    _prefs.getSavedUserId().then((value) => userId = value);
-    _storage.getChatsList(userId).then((value) => chatsStream = value);
+    _storage.getChatsList().then((value) => chatsStream = value);
     super.initState();
   }
 
@@ -58,7 +57,7 @@ class _HomePageState extends State<HomePage> {
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
               _auth.signOut();
-              _prefs.clearLogin();
+              _prefs.clearUserLogin();
               _provider.cleanUser();
               Navigator.pushNamed(context, '/login');
             },
@@ -70,30 +69,21 @@ class _HomePageState extends State<HomePage> {
           CategorySelector(),
           Expanded(
               child: Container(
-            decoration: BoxDecoration(
-                color: Theme.of(context).accentColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30.0),
-                  topRight: Radius.circular(30.0),
-                )),
-            child: Padding(
-              padding: const EdgeInsets.only(top: 5),
-              child: StreamBuilder(
-                  stream: chatsStream,
-                  builder: (context, snapshot) => snapshot.hasData
-                      ? ListView.builder(
-                          itemCount: snapshot.data.documents.length,
-                          itemBuilder: (context, index) => ChatItem(
-                            userName: 'Keks',
-                            lastMessage: 'text',
-                            chatRoomId:
-                                snapshot.data.documents[index].data['id'],
+                  decoration: BoxDecoration(
+                      color: Theme.of(context).accentColor,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(30.0),
+                        topRight: Radius.circular(30.0),
+                      )),
+                  child: _provider.user != null
+                      ? (_provider.tabIndex == 0
+                          ? ChatList(chatsStream: chatsStream)
+                          : UserList())
+                      : Center(
+                          child: CircularProgressIndicator(
+                            backgroundColor: Theme.of(context).primaryColor,
                           ),
-                          physics: BouncingScrollPhysics(),
-                        )
-                      : Container()),
-            ),
-          )),
+                        ))),
         ],
       ),
     );

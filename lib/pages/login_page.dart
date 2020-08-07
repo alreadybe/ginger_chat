@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:read_head_chat/models/user.dart';
 
 import 'package:read_head_chat/services/auth.dart';
 import 'package:read_head_chat/services/prefs.dart';
@@ -59,8 +60,9 @@ class _LoginPageState extends State<LoginPage> {
         if (value != null) {
           _storage.getUserByEmail(emailController.text).then((user) {
             if (user != null) {
-              _provider.setUser(user, null);
-              _prefs.saveLogin(user.id);
+              print('user: ${user.username}');
+              _provider.setUser(user);
+              _prefs.saveUserLogin(user);
             }
           });
 
@@ -84,8 +86,14 @@ class _LoginPageState extends State<LoginPage> {
     void _handleSignUp() {
       _auth.signUp(emailController.text, passwordController.text).then((value) {
         if (value != null) {
-          _provider.setUser(value, usernameController.text);
-          _prefs.saveLogin(value.id);
+          _provider.setUser(User(
+              id: value.id,
+              username: usernameController.text,
+              email: value.email));
+          _prefs.saveUserLogin(User(
+              id: value.id,
+              username: usernameController.text,
+              email: value.email));
           _storage.uploadUser(value, usernameController.text);
           Navigator.pushReplacementNamed(context, '/home');
         } else {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:read_head_chat/models/message.dart';
+import 'package:read_head_chat/services/prefs.dart';
 import 'package:read_head_chat/services/storage.dart';
 import 'package:read_head_chat/widgets/message_item.dart';
 import 'package:read_head_chat/widgets/send_message_bar.dart';
@@ -22,6 +23,7 @@ class _ChatPageState extends State<ChatPage> {
   _ChatPageState(this.chatRoomId, this.username);
 
   Storage _storage = Storage();
+  Prefs _prefs = Prefs();
 
   bool isLoading = true;
   Stream messagesStream;
@@ -29,6 +31,7 @@ class _ChatPageState extends State<ChatPage> {
   @override
   void initState() {
     _storage.getConversations(chatRoomId).then((value) {
+      _prefs.getUserLogin().then((value) => null);
       setState(() {
         messagesStream = value;
         isLoading = false;
@@ -57,19 +60,12 @@ class _ChatPageState extends State<ChatPage> {
                             child: StreamBuilder(
                                 stream: messagesStream,
                                 builder: (context, snapshot) => snapshot.hasData
-                                    ? ListView.builder(
-                                        itemCount:
-                                            snapshot.data.documents.length,
-                                        itemBuilder: (context, index) {
-                                          Message message = Message.fromMap(
-                                              snapshot
-                                                  .data.documents[index].data);
-                                          return MessageItem(message);
-                                        })
+                                    ? _chatList(snapshot)
                                     : Center(
-                                        child:
-                                            Text('START GINGER-MESSAGING NOW!'),
-                                      )))),
+                                        child: CircularProgressIndicator(
+                                        backgroundColor:
+                                            Theme.of(context).primaryColor,
+                                      ))))),
                     SendMessageBar(
                       chatRoomId: chatRoomId,
                     ),
@@ -77,4 +73,18 @@ class _ChatPageState extends State<ChatPage> {
                 ),
               ));
   }
+}
+
+Widget _chatList(snapshot) {
+  return snapshot.data.documents.length > 0
+      ? ListView.builder(
+          itemCount: snapshot.data.documents.length,
+          itemBuilder: (context, index) {
+            Message message =
+                Message.fromMap(snapshot.data.documents[index].data);
+            return MessageItem(message);
+          })
+      : Center(
+          child: Text('START GINGER-MESSAGING NOW!'),
+        );
 }

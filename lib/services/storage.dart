@@ -4,7 +4,9 @@ import 'package:read_head_chat/models/user.dart';
 
 class Storage {
   Future getUserByUsername(username) async {
-    QuerySnapshot user = await Firestore.instance
+    Firestore firestore = Firestore.instance;
+
+    QuerySnapshot user = await firestore
         .collection('users')
         .where('username',
             isGreaterThanOrEqualTo: username, isLessThanOrEqualTo: username)
@@ -19,7 +21,9 @@ class Storage {
   }
 
   Future getUserById(id) async {
-    QuerySnapshot user = await Firestore.instance
+    Firestore firestore = Firestore.instance;
+
+    QuerySnapshot user = await firestore
         .collection('users')
         .where('id', isEqualTo: id)
         .getDocuments()
@@ -33,7 +37,9 @@ class Storage {
   }
 
   Future getUserByEmail(email) async {
-    QuerySnapshot user = await Firestore.instance
+    Firestore firestore = Firestore.instance;
+
+    QuerySnapshot user = await firestore
         .collection('users')
         .where('email', isEqualTo: email)
         .getDocuments()
@@ -47,22 +53,48 @@ class Storage {
     }
   }
 
+  Future getAllUsers() async {
+    Firestore firestore = Firestore.instance;
+
+    Stream<QuerySnapshot> users = firestore
+        .collection('users')
+        .orderBy('isOnline', descending: false)
+        .snapshots();
+
+    return users;
+  }
+
   void uploadUser(userData, username) async {
+    Firestore firestore = Firestore.instance;
+
     Map<String, String> user = {
       'id': userData.id,
       'email': userData.email,
       'username': username,
     };
-    await Firestore.instance
+    await firestore
         .collection('users')
-        .add(user)
+        .document(userData.id)
+        .setData(user)
         .catchError((e) => print(e.toString()));
+  }
+
+  void setUserStatus(bool status, String userId) async {
+    Firestore firestore = Firestore.instance;
+
+    await firestore
+        .collection('users')
+        .document(userId)
+        .updateData({'isOnline': status});
   }
 
   Future getOrCreateChatRoom(User fromUser, User toUser) async {
     Firestore firestore = Firestore.instance;
 
     String chatRoomId = '${fromUser.id}_${toUser.id}';
+
+    print(fromUser.username);
+    print(toUser.username);
 
     QuerySnapshot chat = await firestore
         .collection('chatrooms')
@@ -75,9 +107,9 @@ class Storage {
       Map<String, dynamic> chatRoomData = {
         'id': chatRoomId,
         'users': users,
-        'lastSeenDateFromUser': DateTime.now().millisecondsSinceEpoch,
-        'lastSeenDateToUser': '',
-        'lastMessageTime': '',
+        'lastMessageTime': 0,
+        'lastMessageText': '',
+        'lastMessageSenderId': '',
         'unreadMessages': {'${fromUser.id}': 0, '${toUser.id}': 0}
       };
 
@@ -93,26 +125,26 @@ class Storage {
           .getDocuments();
     }
 
-    List<dynamic> rawUsers = chat.documents[0].data['users'];
-    List<User> users = [User.fromMap(rawUsers[0]), User.fromMap(rawUsers[1])];
+    List<User> users = List<User>.from(chat.documents[0].data['users']
+        .map((user) => User.fromMap(user))
+        .toList());
 
     return Chat(
       id: chat.documents[0].data['id'],
       users: users,
-      lastSeenDateFromUser: chat.documents[0].data['lastSeenDateFromUser'],
-      lastSeenDateToUser: chat.documents[0].data['lastSeenDateToUser'],
       lastMessageTime: chat.documents[0].data['lastMessageTime'],
-      unreadMessages: chat.documents[0].data['unreadMessages'],
+      lastMessageText: chat.documents[0].data['lastMessageText'],
+      lastMessageSenderId: chat.documents[0].data['lastMessageSenderId'],
+      unreadMessages:
+          Map<String, int>.from(chat.documents[0].data['unreadMessages']),
     );
   }
 
-  Future getChatsList(userId) async {
+  Future getChatsList() async {
     Firestore firestore = Firestore.instance;
 
     Stream<QuerySnapshot> chatsList = firestore
         .collection('chatrooms')
-        .where('id',
-            isGreaterThanOrEqualTo: userId, isLessThanOrEqualTo: userId)
         .orderBy('lastMessageTime', descending: false)
         .snapshots();
 
@@ -151,10 +183,9 @@ class Storage {
       toId: oldUnreadMessages[toId] + 1,
     };
 
-    await firestore
-        .collection('chatrooms')
-        .document(chatRoomId)
-        .updateData({'unreadMessages': newUnreadMessages});
+    await firestore.collection('chatrooms').document(chatRoomId).updateData({
+      'unreadMessages': newUnreadMessages,
+    });
   }
 
   void sendMessage(chatRoomId, text, senderId) async {
@@ -177,6 +208,6 @@ class Storage {
     await firestore
         .collection('chatrooms')
         .document(chatRoomId)
-        .updateData({'lastMessageTime': time});
+        .updateData({'lastMessageTime': time, 'lastMessageText': text});
   }
 }

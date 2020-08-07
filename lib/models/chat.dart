@@ -2,9 +2,8 @@ import './user.dart';
 
 class Chat {
   String id;
-
-  int lastSeenDateToUser;
-  int lastSeenDateFromUser;
+  String lastMessageText;
+  String lastMessageSenderId;
 
   int lastMessageTime;
 
@@ -15,11 +14,11 @@ class Chat {
   toMap() {
     Map<String, dynamic> result = {
       'id': this.id,
-      'lastSeenDateToUser': this.lastSeenDateToUser,
-      'lastSeenDateFromUser': this.lastSeenDateFromUser,
+      'lastMessageText': this.lastMessageText,
       'users': this.users,
       'unreadMessages': this.unreadMessages,
       'lastMessageTime': this.lastMessageTime,
+      'lastMessageSenderId': this.lastMessageSenderId,
     };
 
     return result;
@@ -27,19 +26,20 @@ class Chat {
 
   Chat.fromMap(map) {
     this.id = map['id'];
-    this.lastSeenDateToUser = map['lastSeenDateToUser'];
-    this.lastSeenDateFromUser = map['lastSeenDateFromUser'];
+    this.lastMessageText = map['lastMessageText'];
     this.lastMessageTime = map['lastMessageTime'];
-    this.users = map['users'];
-    this.unreadMessages = map['unreadMessages'];
+    this.lastMessageSenderId = map['lastMessageSenderId'];
+    this.users = List<User>.from(
+        map['users'].map((user) => User.fromMap(user)).toList());
+    this.unreadMessages = Map<String, int>.from(map['unreadMessages']);
   }
 
   Chat({
     this.id,
+    this.lastMessageText,
     this.users,
-    this.lastSeenDateToUser,
-    this.lastSeenDateFromUser,
     this.lastMessageTime,
+    this.lastMessageSenderId,
     this.unreadMessages,
   });
 }

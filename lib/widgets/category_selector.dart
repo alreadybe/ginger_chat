@@ -22,7 +22,7 @@ class CategorySelector extends StatelessWidget {
               onTap: () {
                 provider.changeTabIndex(1);
               },
-              child: _categoryItem(provider.tabIndex, 1, 'Online'),
+              child: _categoryItem(provider.tabIndex, 1, 'Users'),
             ),
           ],
         ));
