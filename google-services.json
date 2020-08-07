@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "666749628293",
+    "firebase_url": "https://gingerchat-caa46.firebaseio.com",
+    "project_id": "gingerchat-caa46",
+    "storage_bucket": "gingerchat-caa46.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666749628293:android:246d244f0f630036cd5eec",
+        "android_client_info": {
+          "package_name": "com.dsx.ginger_chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "666749628293-95qedkmn33hql3bt93utd1i5dcg51qlr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzJwDeM3zQT9sVcS5q65Vc-AH-JehCymI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "666749628293-95qedkmn33hql3bt93utd1i5dcg51qlr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
